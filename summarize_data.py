@@ -18,8 +18,8 @@ def summarize_article(article_text, api_key, max_tokens=100):
     except Exception as e:
         return f"Error generating summary: {e}"
 
-# Test the function if run directly
-if __name__ == "__main__":
-    test_article = "OpenAI has introduced new advancements in AI technology to help automate tasks like summarizing text."
-    OPENAI_API_KEY = "your-openai-api-key-here"  # Replace with your OpenAI key for testing
-    print(summarize_article(test_article, OPENAI_API_KEY))
+# # Test the function if run directly
+# if __name__ == "__main__":
+#     test_article = "OpenAI has introduced new advancements in AI technology to help automate tasks like summarizing text."
+#     OPENAI_API_KEY = "your-openai-api-key-here"  # Replace with your OpenAI key for testing
+#     print(summarize_article(test_article, OPENAI_API_KEY))
