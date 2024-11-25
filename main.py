@@ -1,54 +1,52 @@
-import os
-from dotenv import load_dotenv
 from fetch_data import fetch_articles
 from summarize_data import summarize_article
 from send_email import send_email
+import os
+from dotenv import load_dotenv
 
 def main():
-    # Load environment variables from .env file
+    # Get user inputs for email details and topic
     load_dotenv()
-
-    # Get API keys from environment variables
-    news_api_key = os.getenv("key")
-    openai_api_key = os.getenv("open_ai_key")
-
-    if not news_api_key or not openai_api_key:
-        print("API keys are missing. Please check your .env file.")
-        return
-
-    # Prompt user for email details
     recipient_email = input("Enter your email address to receive the summary: ").strip()
-    sender_email = input("Enter your Gmail address: ").strip()
     password = input("Enter your Gmail password or app-specific password: ").strip()
-
-    # Validate the topic input
     topic = input("Enter a topic you're interested in (e.g., technology, sports, health): ").strip()
 
+    # Define SMTP server details
+    smtp_server = "smtp.gmail.com"
+    smtp_port = 587
+
     # Fetch articles
-    articles = fetch_articles(topic, news_api_key)
+    api_key = os.getenv("key")  # Ensure your News API key is set in the .env file
+    articles = fetch_articles(topic, api_key)
+
     if not articles:
         print(f"No articles found for the topic: {topic}")
         return
 
     # Summarize articles
-    summaries = []
-    for article in articles:
-        title = article.get("title", "No Title")
-        url = article.get("url", "No URL")
-        content = article.get("content", "No Content Available")
-        summary = summarize_article(content, openai_api_key)
-        summaries.append(f"**{title}**\n{summary}\nRead more: {url}\n")
+    open_ai_key = os.getenv("open_ai_key")  # Ensure your OpenAI API key is set in the .env file
+    summaries = summarize_article(articles, open_ai_key)
 
-    # Format the email body
-    email_body = "\n\n".join(summaries)
-
-    # Use Gmail's SMTP details
-    smtp_server = "smtp.gmail.com"
-    smtp_port = 587
+    # Format email content
+    email_body = f"Topic: {topic}\n\n"
+    email_body += "Here are the latest articles and their summaries:\n\n"
+    for i, article in enumerate(articles):
+        title = article.get("title", "No title")
+        url = article.get("url", "No URL available")
+        summary = summaries[i] if i < len(summaries) else "No summary available"
+        email_body += f"{i+1}. {title}\nLink: {url}\nSummary: {summary}\n\n"
 
     # Send the email
     try:
-        send_email(smtp_server, smtp_port, sender_email, password, recipient_email, "Your News Summary", email_body)
+        send_email(
+            smtp_server=smtp_server,
+            smtp_port=smtp_port,
+            from_email=recipient_email,
+            password=password,
+            to_email=recipient_email,
+            subject="Your News Summary",
+            body=email_body
+        )
         print(f"Email successfully sent to {recipient_email}")
     except Exception as e:
         print(f"Failed to send email: {e}")
