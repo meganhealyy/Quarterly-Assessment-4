@@ -14,6 +14,7 @@ def main():
     # Define SMTP server details
     smtp_server = "smtp.gmail.com"
     smtp_port = 587
+    sender_email = recipient_email  # Use recipient's email as the sender
 
     # Fetch articles
     api_key = os.getenv("key")  # Ensure your News API key is set in the .env file
@@ -36,12 +37,18 @@ def main():
         summary = summaries[i] if i < len(summaries) else "No summary available"
         email_body += f"{i+1}. {title}\nLink: {url}\nSummary: {summary}\n\n"
 
+    # Handle non-ASCII characters in email body (replace non-breaking spaces with regular spaces)
+    email_body = email_body.replace('\xa0', ' ')  # Replace non-breaking space with normal space
+
+    # Optionally, encode and decode in UTF-8 to sanitize content
+    email_body = email_body.encode('utf-8').decode('utf-8')
+
     # Send the email
     try:
         send_email(
             smtp_server=smtp_server,
             smtp_port=smtp_port,
-            from_email=recipient_email,
+            from_email=sender_email,
             password=password,
             to_email=recipient_email,
             subject="Your News Summary",
