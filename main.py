@@ -1,43 +1,44 @@
-from fetch_data import fetch_articles
-from summarize_data import summarize_article
-from dotenv import load_dotenv
-import os
+# main.py
 
-# Load environment variables
+import os
+from dotenv import load_dotenv
+from fetch_data import fetch_articles
+from summarize_data import summarize_articles
+from send_email import send_email_smtp, send_sendgrid_email
+
+# Load the .env file for API key and email credentials
 load_dotenv()
 
-NEWS_API_KEY = os.getenv("key")
-OPENAI_API_KEY = os.getenv("open_ai_key")
-
-if not NEWS_API_KEY or not OPENAI_API_KEY:
-    raise ValueError("API keys are missing. Ensure they're stored in the .env file.")
-
 def main():
-    # Get topics from the user
-    topics = input("Enter topics you're interested in, separated by commas (e.g. health, sports, etc.):  ").strip().split(',')
-    topics = [topic.strip() for topic in topics if topic.strip()]
+    # Get the API key for OpenAI
+    openai_api_key = os.getenv("OPENAI_API_KEY")
+    
+    # Fetch articles for a given topic
+    topic = input("Enter a topic you're interested in (e.g., technology, sports, health): ")
+    articles = fetch_articles(topic)
+    
+    # Summarize the articles
+    summaries = summarize_articles(articles, openai_api_key)
+    
+    # Format the email body with summaries
+    body = "Here are your daily news summaries:\n\n" + "\n".join([f"- {summary}" for summary in summaries])
+    
+    # Email details
+    subject = f"Latest News Summary for {topic.capitalize()}"
+    to_email = "recipient@example.com"  # Replace with the recipient's email
+    from_email = "your_email@example.com"  # Replace with your email
 
-    if not topics:
-        print("Please provide at least one topic.")
-        return
+    # Option 1: Send email using smtplib
+    # Use your SMTP details (replace with your own details)
+    smtp_server = "smtp.gmail.com"
+    smtp_port = 587
+    login = "your_email@example.com"  # Your email login
+    password = "your_email_password"  # Your email password or app-specific password
+    send_email_smtp(subject, body, to_email, from_email, smtp_server, smtp_port, login, password)
 
-    # Fetch and summarize articles for each topic
-    for topic in topics:
-        articles = fetch_articles(topic, NEWS_API_KEY)
-        print(f"\nArticles for '{topic}':")
-        
-        for idx, article in enumerate(articles[:5], start=1):  # Limit to 5 articles per topic
-            headline = article.get('title', 'No title available')
-            content = article.get('content', 'No content available')
-            link = article.get('url', 'No URL available')
-
-            print(f"\nArticle {idx}:")
-            print(f"Headline: {headline}")
-            print(f"Link: {link}")
-
-            # Generate and print summary
-            summary = summarize_article(content, OPENAI_API_KEY)
-            print(f"Summary: {summary}")
+    # Option 2: Send email using SendGrid (uncomment the below line if you prefer SendGrid)
+    # api_key = "your_sendgrid_api_key"  # Replace with your SendGrid API key
+    # send_sendgrid_email(subject, body, to_email, from_email, api_key)
 
 if __name__ == "__main__":
     main()
