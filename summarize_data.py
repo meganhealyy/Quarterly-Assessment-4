@@ -1,3 +1,4 @@
+
 import openai
 
 def summarize_article(articles, open_ai_key):

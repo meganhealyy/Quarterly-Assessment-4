@@ -14,7 +14,6 @@ def main():
     # Define SMTP server details
     smtp_server = "smtp.gmail.com"
     smtp_port = 587
-    sender_email = recipient_email  # Use recipient's email as the sender
 
     # Fetch articles
     api_key = os.getenv("key")  # Ensure your News API key is set in the .env file
@@ -37,26 +36,33 @@ def main():
         summary = summaries[i] if i < len(summaries) else "No summary available"
         email_body += f"{i+1}. {title}\nLink: {url}\nSummary: {summary}\n\n"
 
-    # Handle non-ASCII characters in email body (replace non-breaking spaces with regular spaces)
-    email_body = email_body.replace('\xa0', ' ')  # Replace non-breaking space with normal space
-
-    # Optionally, encode and decode in UTF-8 to sanitize content
-    email_body = email_body.encode('utf-8').decode('utf-8')
+    # Clean up the email body (remove non-ASCII characters)
+    email_body = clean_text(email_body)
 
     # Send the email
     try:
         send_email(
             smtp_server=smtp_server,
             smtp_port=smtp_port,
-            from_email=sender_email,
+            from_email=recipient_email,  # Use the recipient's email as sender
             password=password,
-            to_email=recipient_email,
+            to_email=recipient_email,  # Send the email to the same address
             subject="Your News Summary",
             body=email_body
         )
         print(f"Email successfully sent to {recipient_email}")
     except Exception as e:
         print(f"Failed to send email: {e}")
+
+def clean_text(text):
+    """
+    Cleans up the text to remove any unwanted non-ASCII characters, 
+    including non-breaking spaces and other special characters.
+    """
+    # Replace non-breaking spaces and other special characters
+    cleaned_text = text.replace('\xa0', ' ')  # Replace non-breaking space with a regular space
+    # You can further add other characters to replace or remove if needed
+    return cleaned_text
 
 if __name__ == "__main__":
     main()
