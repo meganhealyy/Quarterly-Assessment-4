@@ -1,0 +1,1 @@
+2024-11-25 09:19:55,018 - ERROR - Error fetching news: 401 Client Error: Unauthorized for url: https://newsapi.org/v2/top-headlines?q=sports&apiKey=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&language=en&pageSize=5
