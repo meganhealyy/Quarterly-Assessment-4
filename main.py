@@ -14,7 +14,7 @@ if not NEWS_API_KEY or not OPENAI_API_KEY:
 
 def main():
     # Get topics from the user
-    topics = input("Enter topics you're interested in, separated by commas: ").strip().split(',')
+    topics = input("Enter topics you're interested in, separated by commas (e.g. health, sports, etc.):  ").strip().split(',')
     topics = [topic.strip() for topic in topics if topic.strip()]
 
     if not topics:
